@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Eben-ezer Jóvenes · Compartir</title>
+<title>Ministerio Juvenil Eben-ezer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -165,9 +165,9 @@
 <div class="wrap">
 
   <div class="top">
-    <span class="badge">Compartir de jóvenes</span>
-    <h1>Grupo <span>Eben-ezer</span></h1>
-    <p>Elige lo que vas a traer para el compartir 🎉</p>
+    <span class="badge">+1</span>
+    <h1>Ministerio <span>Eben-ezer</span></h1>
+    <p>Elige lo que puedes traer para el compartir 🎉</p>
     <div class="evento">
       <div class="ico">📍</div>
       <div>
@@ -443,7 +443,7 @@ function renderGrid(){
   const totalLeft = Object.values(currentInventory).reduce((a,b)=>a+(b||0),0);
   const pct = Math.round(100*(TOTAL_QTY-totalLeft)/TOTAL_QTY);
   $('meter-fill').style.width = pct+'%';
-  $('meter-text').textContent = `Quedan ${totalLeft} de ${TOTAL_QTY} alimentos`;
+ /*$('meter-text').textContent = `Quedan ${totalLeft} de ${TOTAL_QTY} alimentos`;*/
   $('meter-pct').textContent = pct+'%';
 }
 
