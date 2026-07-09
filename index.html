@@ -443,7 +443,7 @@ function renderGrid(){
   const totalLeft = Object.values(currentInventory).reduce((a,b)=>a+(b||0),0);
   const pct = Math.round(100*(TOTAL_QTY-totalLeft)/TOTAL_QTY);
   $('meter-fill').style.width = pct+'%';
- /*$('meter-text').textContent = `Quedan ${totalLeft} de ${TOTAL_QTY} alimentos`;*/
+ $('meter-text').textContent = `Quedan ${totalLeft} de ${TOTAL_QTY} alimentos`;
   $('meter-pct').textContent = pct+'%';
 }
 
