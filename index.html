@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Eben-ezer Jóvenes · Compartir</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- ============================================================
+     FIREBASE (opcional pero recomendado)
+     Para que TODOS los celulares vean la misma lista en vivo,
+     pega aquí abajo la config de tu proyecto de Firebase.
+     Si la dejas como está, la app funciona en "modo local"
+     (cada celular ve su propia copia, sin sincronizar).
+     Instrucciones completas al final del mensaje del chat.
+     ============================================================ -->
+<script>
+  window.FIREBASE_CONFIG = {
+    apiKey: "AIzaSyC3L0cs7aDJm2RBzHjP0muTCEr1jUvCykw",
+    authDomain: "inventario-f2a3b.firebaseapp.com",
+    databaseURL: "https://inventario-f2a3b-default-rtdb.firebaseio.com",
+    projectId: "inventario-f2a3b",
+    storageBucket: "inventario-f2a3b.firebasestorage.app",
+    messagingSenderId: "437623592124",
+    appId: "1:437623592124:web:83e553da88296a377e2cb9"
+  };
+</script>
+
+<style>
+  :root{
+    --bg-deep:#241934;
+    --bg-deep2:#180f26;
+    --mango:#FF8A3D;
+    --guava:#FF5C8A;
+    --lime:#C4F135;
+    --cream:#FFF6E9;
+    --muted:#B9A9CE;
+    --card:#2E2044;
+    --card-border:#40305C;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 0%, #3a2657 0%, transparent 45%),
+      radial-gradient(circle at 90% 10%, #4a2450 0%, transparent 40%),
+      linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-deep2) 100%);
+    color:var(--cream);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{font-family:'Fredoka',sans-serif;}
+  .wrap{max-width:560px;margin:0 auto;padding:22px 18px 60px;}
+
+  /* header */
+  .top{text-align:center;padding-top:10px;}
+  .badge{
+    display:inline-block;background:var(--lime);color:#1a1226;
+    font-family:'Fredoka';font-weight:600;font-size:12.5px;
+    padding:5px 14px;border-radius:99px;letter-spacing:.04em;
+    text-transform:uppercase;
+  }
+  .top h1{font-size:28px;line-height:1.15;margin:14px 0 4px;font-weight:700;}
+  .top h1 span{color:var(--mango);}
+  .top p{color:var(--muted);font-size:14.5px;margin:0 0 4px;}
+  .evento{
+    margin-top:16px;background:var(--card);border:1px solid var(--card-border);
+    border-radius:16px;padding:14px 16px;font-size:14px;color:var(--cream);
+    display:flex;gap:10px;align-items:center;text-align:left;
+  }
+  .evento .ico{font-size:22px;}
+
+  /* meter */
+  .meter-box{margin:20px 0 8px;}
+  .meter-label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:6px;}
+  .meter-bar{height:10px;border-radius:99px;background:#150c22;overflow:hidden;border:1px solid var(--card-border);}
+  .meter-fill{height:100%;background:linear-gradient(90deg,var(--guava),var(--mango));border-radius:99px;transition:width .5s ease;}
+
+  /* buttons */
+  .btn{
+    display:block;width:100%;border:none;border-radius:16px;
+    font-family:'Fredoka';font-weight:600;font-size:16px;
+    padding:15px 18px;cursor:pointer;text-align:center;
+  }
+  .btn-primary{background:var(--lime);color:#1a1226;}
+  .btn-primary:active{transform:scale(.98);}
+  .btn-ghost{background:transparent;border:1px solid var(--card-border);color:var(--cream);}
+
+  input[type=text]{
+    width:100%;padding:14px 16px;border-radius:14px;border:1px solid var(--card-border);
+    background:var(--card);color:var(--cream);font-size:16px;font-family:'Inter';
+  }
+  input[type=text]::placeholder{color:var(--muted);}
+  label{font-size:13px;color:var(--muted);display:block;margin:14px 0 6px;}
+
+  /* grid */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
+  .card{
+    background:var(--card);border:1px solid var(--card-border);border-radius:16px;
+    padding:14px 10px;text-align:center;cursor:pointer;transition:transform .15s, border-color .15s;
+    position:relative;
+  }
+  .card:active{transform:scale(.96);}
+  .card.grande{border-color:var(--mango);box-shadow:0 0 0 1px var(--mango) inset;}
+  .card.bev{border-color:var(--guava);}
+  .card .emoji{font-size:30px;display:block;margin-bottom:6px;}
+  .card .name{font-size:13px;font-weight:600;line-height:1.2;font-family:'Fredoka';}
+  .card .stock{font-size:11px;color:var(--muted);margin-top:4px;}
+  .tag{
+    position:absolute;top:6px;right:6px;font-size:9px;font-family:'Fredoka';
+    background:var(--mango);color:#1a1226;padding:2px 6px;border-radius:99px;font-weight:600;
+  }
+  .tag.bev{background:var(--guava);}
+  .empty-msg{
+    text-align:center;color:var(--muted);font-size:14px;padding:30px 10px;
+  }
+
+  /* modal / screens */
+  .screen{display:none;}
+  .screen.active{display:block;}
+  .center-card{
+    background:var(--card);border:1px solid var(--card-border);border-radius:20px;
+    padding:26px 22px;text-align:center;margin-top:18px;
+  }
+  .center-card .emoji-big{font-size:52px;}
+  .center-card h2{font-size:20px;margin:10px 0 4px;}
+  .stamp{
+    display:inline-block;background:var(--lime);color:#1a1226;
+    font-family:'Fredoka';font-weight:700;font-size:46px;
+    padding:6px 26px;border-radius:14px;transform:rotate(-6deg);
+    margin:14px 0 6px;
+    animation:pop .45s cubic-bezier(.2,1.4,.4,1);
+    box-shadow:0 8px 0 rgba(0,0,0,.15);
+  }
+  @keyframes pop{from{transform:rotate(-6deg) scale(.4);opacity:0;}to{transform:rotate(-6deg) scale(1);opacity:1;}}
+  .thanks-msg{font-size:15.5px;color:var(--cream);margin-top:10px;line-height:1.5;}
+  .thanks-msg b{color:var(--lime);}
+  .footer-note{color:var(--muted);font-size:11.5px;text-align:center;margin-top:34px;line-height:1.6;}
+
+  /* overlay confirm */
+  .overlay{
+    position:fixed;inset:0;background:rgba(15,9,25,.75);
+    display:none;align-items:flex-end;justify-content:center;z-index:50;
+  }
+  .overlay.active{display:flex;}
+  .sheet{
+    width:100%;max-width:560px;background:var(--bg-deep);border:1px solid var(--card-border);
+    border-radius:22px 22px 0 0;padding:22px 20px 26px;text-align:center;
+  }
+  .sheet .emoji{font-size:44px;}
+  .sheet h3{margin:8px 0 4px;font-size:19px;}
+  .sheet p{color:var(--muted);font-size:13.5px;margin:0 0 18px;}
+  .sheet-actions{display:flex;gap:10px;}
+  .sheet-actions .btn{flex:1;}
+
+  /* admin */
+  .admin-row{display:flex;justify-content:space-between;font-size:12.5px;padding:8px 0;border-bottom:1px solid var(--card-border);}
+  .admin-row span.n{color:var(--muted);}
+  .pill{font-size:11px;background:#150c22;padding:6px 10px;border-radius:99px;color:var(--muted);display:inline-block;margin-bottom:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <span class="badge">Compartir de jóvenes</span>
+    <h1>Grupo <span>Eben-ezer</span></h1>
+    <p>Elige lo que vas a traer para el compartir 🎉</p>
+    <div class="evento">
+      <div class="ico">📍</div>
+      <div>
+        <b>Sábado 11 de julio · 6:30 pm</b><br>
+        Iglesia Central Barrancabermeja
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PANTALLA 1: NOMBRE ============ -->
+  <div id="screen-start" class="screen active">
+    <label for="nombre">Escribe tu nombre para continuar</label>
+    <input type="text" id="nombre" placeholder="Ej: Juan Pérez" maxlength="40">
+    <div style="height:14px"></div>
+    <button class="btn btn-primary" id="btn-continuar">Ver lo que puedo traer 🍿</button>
+  </div>
+
+  <!-- ============ PANTALLA 2: LISTA ============ -->
+  <div id="screen-lista" class="screen">
+    <div class="meter-box">
+      <div class="meter-label"><span id="meter-text">Cargando…</span><span id="meter-pct"></span></div>
+      <div class="meter-bar"><div class="meter-fill" id="meter-fill" style="width:0%"></div></div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="footer-note">Los ítems se van agotando en tiempo real.<br>El naranja 🎉 son formatos grandes, el rosado 🥤 son bebidas.</div>
+  </div>
+
+  <!-- ============ PANTALLA 3: GRACIAS ============ -->
+  <div id="screen-gracias" class="screen">
+    <div class="center-card">
+      <div class="emoji-big" id="gracias-emoji">🎊</div>
+      <div class="stamp">+1</div>
+      <h2 id="gracias-item"></h2>
+      <p class="thanks-msg">
+        ¡Gracias <b id="gracias-nombre"></b>! Ya quedaste registrado(a).<br><br>
+        Te esperamos este <b>sábado 11 de julio</b><br>
+        <b>Iglesia Central Barrancabermeja</b><br>
+        <b>6:30 pm</b> 🙌
+      </p>
+    </div>
+  </div>
+
+  <!-- ============ PANTALLA 4: YA ELEGISTE ============ -->
+  <div id="screen-repetido" class="screen">
+    <div class="center-card">
+      <div class="emoji-big">✅</div>
+      <h2>Ya habías elegido</h2>
+      <p class="thanks-msg">
+        Desde este celular ya se registró: <b id="repetido-item"></b><br><br>
+        Nos vemos el <b>sábado 11 de julio</b><br>
+        <b>Iglesia Central Barrancabermeja · 6:30 pm</b>
+      </p>
+    </div>
+  </div>
+
+  <div class="footer-note" id="admin-link" style="cursor:pointer;">Eben-ezer · plataforma temporal para este compartir</div>
+
+  <!-- ============ ADMIN ============ -->
+  <div id="screen-admin" class="screen">
+    <div class="center-card" style="text-align:left">
+      <h2 style="text-align:center">Panel del organizador</h2>
+      <div id="admin-login">
+        <label>Clave</label>
+        <input type="text" id="admin-pass" placeholder="Clave">
+        <div style="height:10px"></div>
+        <button class="btn btn-primary" id="admin-entrar">Entrar</button>
+      </div>
+      <div id="admin-panel" style="display:none">
+        <span class="pill" id="admin-total"></span>
+        <div id="admin-list"></div>
+      </div>
+      <div style="height:10px"></div>
+      <button class="btn btn-ghost" id="admin-volver">Volver</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- overlay confirmación -->
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="emoji" id="sheet-emoji">🍟</div>
+    <h3 id="sheet-name">Item</h3>
+    <p>¿Confirmas que vas a traer esto?</p>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" id="sheet-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="sheet-confirm">Sí, confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+/* ============================================================
+   1. LISTA DE ÍTEMS
+   ============================================================ */
+const ITEMS = [
+ {id:'papi_mayo', name:'Papitas de mayonesa', emoji:'🍟', qty:2, tier:'simple'},
+ {id:'papi_limon', name:'Papitas de limón', emoji:'🍋', qty:2, tier:'simple'},
+ {id:'mixto_familiar', name:'Mixto Familiar', emoji:'🎉', qty:1, tier:'grande'},
+ {id:'papi_tomate', name:'Papitas de tomate', emoji:'🍅', qty:2, tier:'simple'},
+ {id:'papi_bbq', name:'Papitas BBQ', emoji:'🔥', qty:2, tier:'simple'},
+ {id:'mixto', name:'Mixto', emoji:'🎊', qty:1, tier:'simple'},
+ {id:'mixto_mega', name:'Mixto Mega Familiar', emoji:'🎆', qty:1, tier:'grande'},
+ {id:'platanitos_verdes', name:'Platanitos verdes', emoji:'🍌', qty:2, tier:'simple'},
+ {id:'platanitos_maduros', name:'Platanitos maduros', emoji:'🍌', qty:2, tier:'simple'},
+ {id:'mani_salado', name:'Maní salado', emoji:'🥜', qty:2, tier:'simple'},
+ {id:'mani_dulce', name:'Maní dulce', emoji:'🥜', qty:2, tier:'simple'},
+ {id:'gall_rondalla', name:'Galletas Rondalla', emoji:'🍪', qty:2, tier:'simple'},
+ {id:'gall_wafer', name:'Galletas Wafer', emoji:'🧇', qty:1, tier:'simple'},
+ {id:'gall_fest_choc', name:'Galletas Festival chocolate', emoji:'🍫', qty:1, tier:'simple'},
+ {id:'gall_fest_limon', name:'Galletas Festival limón', emoji:'🍪', qty:1, tier:'simple'},
+ {id:'gall_fest_vainilla', name:'Galletas Festival vainilla', emoji:'🍪', qty:1, tier:'simple'},
+ {id:'gall_oreo', name:'Galletas Oreo', emoji:'🍪', qty:1, tier:'simple'},
+ {id:'gall_ducales', name:'Galletas Ducales', emoji:'🍘', qty:1, tier:'simple'},
+ {id:'gomitas_aro', name:'Gomitas de aro', emoji:'🍬', qty:1, tier:'simple'},
+ {id:'gomitas_gusanito', name:'Gomitas de gusanito', emoji:'🐛', qty:1, tier:'simple'},
+ {id:'chocorramo', name:'Chocorramo', emoji:'🍫', qty:1, tier:'simple'},
+ {id:'ponque_gala', name:'Ponqué Gala', emoji:'🧁', qty:1, tier:'simple'},
+ {id:'masmelos', name:'Masmelos', emoji:'🍡', qty:1, tier:'simple'},
+ {id:'supercoco', name:'Supercoco', emoji:'🥥', qty:1, tier:'simple'},
+ {id:'coffee_delight', name:'Coffee Delight', emoji:'☕', qty:1, tier:'simple'},
+ {id:'paletas', name:'Paletas (colombinas)', emoji:'🍭', qty:1, tier:'simple'},
+ {id:'barriletes', name:'Barriletes', emoji:'🍬', qty:2, tier:'simple'},
+ {id:'nucitas', name:'Nucitas', emoji:'🍫', qty:2, tier:'simple'},
+ {id:'quipitos', name:'Quipitos', emoji:'🌽', qty:4, tier:'simple'},
+ {id:'frunas', name:'Frunas', emoji:'🍬', qty:2, tier:'simple'},
+ {id:'mini_jet', name:'Mini chocolatinas Jet', emoji:'🍫', qty:2, tier:'simple'},
+ {id:'coca_litro', name:'Coca-Cola litro', emoji:'🥤', qty:1, tier:'grande', bev:true},
+ {id:'coca_25', name:'Coca-Cola 2.5 litros', emoji:'🥤', qty:1, tier:'grande', bev:true},
+ {id:'postobon_manzana', name:'Postobón manzana', emoji:'🍏', qty:2, tier:'simple', bev:true},
+ {id:'coca_1l', name:'Coca-Cola 1 litro', emoji:'🥤', qty:1, tier:'grande', bev:true},
+ {id:'pepsi', name:'Gaseosa Pepsi', emoji:'🥤', qty:1, tier:'simple', bev:true},
+ {id:'doritos', name:'Doritos', emoji:'🌶️', qty:3, tier:'simple'},
+ {id:'choclitos_limon', name:'Choclitos de limón', emoji:'🌽', qty:2, tier:'simple'},
+ {id:'palomitas', name:'Palomitas', emoji:'🍿', qty:3, tier:'simple'},
+ {id:'cheetos', name:'Cheetos', emoji:'🧀', qty:2, tier:'simple'},
+ {id:'cheese_tris', name:'Cheese Tris', emoji:'🧀', qty:1, tier:'simple'},
+ {id:'maizitos', name:'Maizitos naturales', emoji:'🌽', qty:2, tier:'simple'},
+ {id:'tostacos', name:'Tostacos', emoji:'🌽', qty:2, tier:'simple'},
+];
+const TOTAL_QTY = ITEMS.reduce((a,i)=>a+i.qty,0);
+const UNLOCK_AFTER_SELECTIONS = 20;     // tras 20 elecciones se destapan los formatos grandes
+const UNLOCK_WHEN_SIMPLE_LEFT = 15;     // o si quedan <=15 unidades simples
+const ADMIN_PASS = "2025";
+
+/* ============================================================
+   2. FIREBASE (o modo local de respaldo)
+   ============================================================ */
+let db = null;
+let useFirebase = false;
+try{
+  if(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey !== "TU_API_KEY"){
+    firebase.initializeApp(window.FIREBASE_CONFIG);
+    db = firebase.database();
+    useFirebase = true;
+  }
+}catch(e){ console.warn("Firebase no configurado, usando modo local", e); }
+
+// ---- capa de datos: funciona igual con Firebase o con localStorage ----
+function localState(){
+  let s = JSON.parse(localStorage.getItem('ebenezer_state')||'null');
+  if(!s){
+    s = {inventory:{}, selections:{}};
+    ITEMS.forEach(i=> s.inventory[i.id]=i.qty);
+    localStorage.setItem('ebenezer_state', JSON.stringify(s));
+  }
+  return s;
+}
+function localSave(s){ localStorage.setItem('ebenezer_state', JSON.stringify(s)); }
+
+function onInventoryChange(cb){
+  if(useFirebase){
+    db.ref('inventory').on('value', snap=>{
+      let inv = snap.val();
+      if(!inv){
+        // sembrar por primera vez
+        let init={}; ITEMS.forEach(i=> init[i.id]=i.qty);
+        db.ref('inventory').set(init);
+      } else { cb(inv); }
+    });
+  } else {
+    cb(localState().inventory);
+  }
+}
+function onSelectionsChange(cb){
+  if(useFirebase){
+    db.ref('selections').on('value', snap=> cb(snap.val()||{}));
+  } else {
+    cb(localState().selections);
+  }
+}
+// intenta tomar 1 unidad del item; devuelve true/false
+function claimItem(itemId, nombre){
+  return new Promise(resolve=>{
+    if(useFirebase){
+      const ref = db.ref('inventory/'+itemId);
+      ref.transaction(cur=>{
+        if(cur === null) return cur;
+        if(cur <= 0) return cur;
+        return cur - 1;
+      }, (err, committed, snap)=>{
+        if(err || !committed){ resolve(false); return; }
+        const val = snap.val();
+        if(val === undefined){ resolve(false); return; }
+        db.ref('selections').push({nombre, itemId, ts: Date.now()});
+        resolve(true);
+      });
+    } else {
+      let s = localState();
+      if((s.inventory[itemId]||0) <= 0){ resolve(false); return; }
+      s.inventory[itemId] -= 1;
+      const key = 'sel_'+Date.now();
+      s.selections[key] = {nombre, itemId, ts: Date.now()};
+      localSave(s);
+      resolve(true);
+    }
+  });
+}
+
+/* ============================================================
+   3. ESTADO / UI
+   ============================================================ */
+let currentInventory = {};
+let selectionsCount = 0;
+let selectedCard = null;
+
+const $ = id=>document.getElementById(id);
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+onInventoryChange(inv=>{
+  currentInventory = inv;
+  renderGrid();
+  renderAdmin();
+});
+onSelectionsChange(sel=>{
+  selectionsCount = Object.keys(sel||{}).length;
+  window.__lastSelections = sel;
+  renderGrid();
+  renderAdmin();
+});
+
+function itemsRemainingSimple(){
+  return ITEMS.filter(i=>i.tier==='simple').reduce((a,i)=> a + (currentInventory[i.id]||0), 0);
+}
+function grandeUnlocked(){
+  return selectionsCount >= UNLOCK_AFTER_SELECTIONS || itemsRemainingSimple() <= UNLOCK_WHEN_SIMPLE_LEFT;
+}
+
+function renderGrid(){
+  const grid = $('grid');
+  const unlocked = grandeUnlocked();
+  const visible = ITEMS.filter(i=>{
+    const left = currentInventory[i.id];
+    if(left === undefined) return true; // aún cargando
+    if(left <= 0) return false;
+    if(i.tier==='grande' && !unlocked) return false;
+    return true;
+  });
+
+  grid.innerHTML = '';
+  if(visible.length===0){
+    grid.innerHTML = '<div class="empty-msg">¡Todo lo que había para traer ya fue elegido! 🎉<br>Habla con el organizador.</div>';
+  } else {
+    visible.forEach(i=>{
+      const left = currentInventory[i.id] ?? i.qty;
+      const div = document.createElement('div');
+      div.className = 'card' + (i.tier==='grande'?' grande':'') + (i.bev?' bev':'');
+      div.innerHTML = `
+        ${i.tier==='grande' ? '<span class="tag">grande</span>' : (i.bev ? '<span class="tag bev">bebida</span>' : '')}
+        <span class="emoji">${i.emoji}</span>
+        <span class="name">${i.name}</span>
+        <span class="stock">quedan ${left}</span>`;
+      div.onclick = ()=> openConfirm(i);
+      grid.appendChild(div);
+    });
+  }
+
+  // medidor
+  const totalLeft = Object.values(currentInventory).reduce((a,b)=>a+(b||0),0);
+  const pct = Math.round(100*(TOTAL_QTY-totalLeft)/TOTAL_QTY);
+  $('meter-fill').style.width = pct+'%';
+  $('meter-text').textContent = `Quedan ${totalLeft} de ${TOTAL_QTY} alimentos`;
+  $('meter-pct').textContent = pct+'%';
+}
+
+function openConfirm(item){
+  selectedCard = item;
+  $('sheet-emoji').textContent = item.emoji;
+  $('sheet-name').textContent = item.name;
+  $('overlay').classList.add('active');
+}
+$('sheet-cancel').onclick = ()=> $('overlay').classList.remove('active');
+$('sheet-confirm').onclick = async ()=>{
+  $('overlay').classList.remove('active');
+  const nombre = localStorage.getItem('ebenezer_nombre') || 'Joven';
+  const ok = await claimItem(selectedCard.id, nombre);
+  if(!ok){
+    alert('¡Justo se acabó ese ítem! Elige otro 🙏');
+    return;
+  }
+  localStorage.setItem('ebenezer_choice', JSON.stringify({item:selectedCard.name, emoji:selectedCard.emoji}));
+  $('gracias-emoji').textContent = selectedCard.emoji;
+  $('gracias-item').textContent = selectedCard.name;
+  $('gracias-nombre').textContent = nombre;
+  showScreen('screen-gracias');
+};
+
+/* ============================================================
+   4. FLUJO PRINCIPAL
+   ============================================================ */
+$('btn-continuar').onclick = ()=>{
+  const nombre = $('nombre').value.trim();
+  if(!nombre){ $('nombre').focus(); return; }
+  localStorage.setItem('ebenezer_nombre', nombre);
+  showScreen('screen-lista');
+};
+
+// si el dispositivo ya eligió antes, bloquear
+window.addEventListener('load', ()=>{
+  const prev = JSON.parse(localStorage.getItem('ebenezer_choice')||'null');
+  if(prev){
+    $('repetido-item').textContent = prev.emoji+' '+prev.item;
+    showScreen('screen-repetido');
+  }
+});
+
+/* ============================================================
+   5. ADMIN
+   ============================================================ */
+$('admin-link').onclick = ()=> showScreen('screen-admin');
+$('admin-volver').onclick = ()=>{
+  const prev = JSON.parse(localStorage.getItem('ebenezer_choice')||'null');
+  showScreen(prev ? 'screen-repetido' : (localStorage.getItem('ebenezer_nombre') ? 'screen-lista' : 'screen-start'));
+};
+$('admin-entrar').onclick = ()=>{
+  if($('admin-pass').value === ADMIN_PASS){
+    $('admin-login').style.display='none';
+    $('admin-panel').style.display='block';
+    renderAdmin();
+  } else { alert('Clave incorrecta'); }
+};
+function renderAdmin(){
+  if($('admin-panel').style.display !== 'block') return;
+  const sel = window.__lastSelections || {};
+  const arr = Object.values(sel).sort((a,b)=> b.ts-a.ts);
+  $('admin-total').textContent = arr.length + ' jóvenes ya eligieron';
+  $('admin-list').innerHTML = arr.map(s=>{
+    const it = ITEMS.find(i=>i.id===s.itemId);
+    const hora = new Date(s.ts).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    return `<div class="admin-row"><span>${s.nombre} — ${it? it.emoji+' '+it.name : s.itemId}</span><span class="n">${hora}</span></div>`;
+  }).join('') || '<p style="color:var(--muted);font-size:13px">Aún nadie ha elegido.</p>';
+}
+</script>
+</body>
+</html>
